@@ -1,0 +1,77 @@
+# 价值学习
+
+## DQN与Q学习
+
+最优动作价值函数的近似：DQN(deep Q network) \
+记为$Q(s,a;\boldsymbol w)$ ，其中$w$为神将网络中参数
+**DQN结构**：DQN为神经网络结构，输入为状态$s$，输出为离散动作空间上每个动作的$Q$值
+``
+DQN的梯度：
+$$
+\nabla_w Q(s,a;\boldsymbol{w}) \triangleq \frac{\partial Q(s,a;\boldsymbol{w})}{\partial w}
+$$
+
+### 时间差分算法(TD)
+训练DQN的常用算法 
+* TD目标是含实际成分的预测值 \
+  DQN预测值和TD目标区别：DQN预测值为$s_t,a_t$为变量的预测值，无事实成分，TD目标为已知$r_t$的预测值
+* TD误差$\delta$即为模型估计与真是观测之差
+* TD算法可利用**未达成目标的部分事实信息**参与训练，以基于部分事实的TD目标$\hat{y}$对模型进行修正，使得损失函数$L(\omega)=\frac{1}{2}(\hat{q}-\hat{y})^2$减小 
+
+***
+* 算法推导 \
+  回报
+  $$
+  U_t=\sum_{k=t}^n \gamma^{k-t} \cdot R_k 
+  $$
+  故
+  $$
+  U_t=R_t+\gamma \cdot U_{t+1} 
+  $$
+  最优动作价值函数可写成最优贝尔曼方程一种形式
+  $$
+  Q_{\star}(s_t,a_t)=\mathbb{E}_{S_{t+1}\sim p(\cdot | s_t,a_t)} \left[R_t+\gamma \cdot \max Q_{\star}(S_{t+1},A)\right]
+  $$
+  其中$Q_{\star}(s_t,a_t)$为$U_t$期望，$\max Q_{\star}(S_{t+1},A)$为$U_{t+1}$期望 \
+  当智能体执行动作$a_t$后，可利用状态转移函数计算新状态$s_{t+1}$。同时奖励$R_t$最多只依赖于$S_t,A_t,S_{t+1}$，故此时确定四元组
+  $$
+  \left(s_t,a_t,r_t,s_{t+1}\right)
+  $$
+  进而可计算出
+  $$
+  r_t+\gamma\cdot\max_{a\in A}Q_{\star}(s_{t+1},a)
+  $$
+  可视为$U_t$期望的蒙特卡洛近似，即
+  $$
+  \bm{Q_{\star}(s_{t},a_t) \approx r_t+\gamma\cdot\max_{a\in A}Q_{\star}(s_{t+1},a)}
+  $$
+  **即此时忽略状态转移函数计算所得概率较小的$s_{t+1}$的情况，仅以最大概率新状态估算回报期望**\
+  ***
+  在神经网络中$Q_{\star}(s,a)$替换为神经网络$Q(s,a;\omega)$
+  $$Q(s_t,a_t;\omega)\approx r_t+\gamma\cdot\max_{a\in A}Q(s_{t+1},a;\omega)$$
+  损失函数
+  $$L(\omega)=\frac{1}{2}[Q(s_t,a_t;\omega)]$$
+* 训练流程
+  * 收集训练数据：
+    常采用的策略函数控制智能体与环境交互---$\epsilon-greedy$策略
+    $$
+    a_t = 
+    \begin{cases} 
+    \begin{align}
+    &argmax_a Q(s_t,a;\omega),  &以概率(1-\epsilon) \nonumber\\
+    &均匀抽取A中一个动作，         &以概率\epsilon \nonumber
+    \end{align}
+    \end{cases}
+    $$
+    智能体在一局游戏中轨迹为n个四元组$(s_t,a_t,r_t,s_{t+1}$，称为经验回放数组，设当前DQN参数为$\omega_{now}$
+  * 更新DQN参数$\omega$ \
+    随机从经验回放数组中取一个四元组，记为$(s_j,a_j,r_j,s_{j+1})$
+    1. 对DQN正向传播，得到Q值
+    $$\hat{q_j}=Q(s_j,a_j;\omega_{now})，\hat{q_{j+1}}=\max_{a\in A}Q(s_{j+1},a;\omega_{now})$$
+    2. 计算TD目标和TD误差
+    $$\hat{y_j}=r_j+\gamma\cdot \hat{q_{j+1}}，\delta_j=\hat{q_j}-\hat{y_j}$$
+    3. 对DQN做反向传播，得到梯度
+    $$\hat{g_j}=\nabla_{\omega}Q(s_j,a_j;\omega_{now})$$
+    4. 做梯度下降更新DQN的参数
+    $$\omega_{new}\leftarrow \omega_{now}-\alpha\cdot\delta_j\cdot g_j$$
+训练中，收集数据与更新DQN参数可同时进行，也可每执行一个动作后更新$\omega$
