@@ -5,13 +5,18 @@
 最优动作价值函数的近似：DQN(deep Q network) \
 记为$Q(s,a;\boldsymbol w)$ ，其中$w$为神将网络中参数
 **DQN结构**：DQN为神经网络结构，输入为状态$s$，输出为离散动作空间上每个动作的$Q$值
-``
+![](./picture/1.jpg)
 DQN的梯度：
 $$
 \nabla_w Q(s,a;\boldsymbol{w}) \triangleq \frac{\partial Q(s,a;\boldsymbol{w})}{\partial w}
 $$
 
 ### 时间差分算法(TD)
+TD算法:
+* Q学习算法(学习最优动作价值函数$Q_\star$)
+* SARSA算法(学习动作价值函数$Q_\pi$)
+
+***
 训练DQN的常用算法 
 * TD目标是含实际成分的预测值 \
   DQN预测值和TD目标区别：DQN预测值为$s_t,a_t$为变量的预测值，无事实成分，TD目标为已知$r_t$的预测值
