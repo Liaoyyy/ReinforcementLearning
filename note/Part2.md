@@ -23,7 +23,7 @@ TD算法:
   DQN预测值和TD目标区别：DQN预测值为$s_t,a_t$为变量的预测值，无事实成分，TD目标为已知$r_t$的预测值
 * TD误差$\delta$即为模型估计与真是观测之差
 * TD算法可利用**未达成目标的部分事实信息**参与训练，以基于部分事实的TD目标$\hat{y}$对模型进行修正，使得损失函数$L(\omega)=\frac{1}{2}(\hat{q}-\hat{y})^2$减小 
-
+* DQN学习的是最佳动作函数$Q_\star$
 ***
 * 算法推导 \
   回报
@@ -51,7 +51,7 @@ TD算法:
   $$
   \bm{Q_{\star}(s_{t},a_t) \approx r_t+\gamma\cdot\max_{a\in A}Q_{\star}(s_{t+1},a)}
   $$
-  **即此时忽略状态转移函数计算所得概率较小的$s_{t+1}$的情况，仅以最大概率新状态估算回报期望**\
+  **即此时忽略状态转移函数计算所得概率较小的$s_{t+1}$的情况，仅以最大概率新状态估算回报期望**
   ***
   在神经网络中$Q_{\star}(s,a)$替换为神经网络$Q(s,a;\omega)$
   $$Q(s_t,a_t;\omega)\approx r_t+\gamma\cdot\max_{a\in A}Q(s_{t+1},a;\omega)$$
@@ -81,3 +81,30 @@ TD算法:
     4. 做梯度下降更新DQN的参数
     $$\omega_{new}\leftarrow \omega_{now}-\alpha\cdot\delta_j\cdot g_j$$
 训练中，收集数据与更新DQN参数可同时进行，也可每执行一个动作后更新$\omega$
+
+### 策略(on-policy)与异策略(off-policy)
+行为策略：收集数据时采取的策略 \
+目标策略：最后训练得到的策略函数，确定性策略$a=\argmax_a Q(s_t,a;w\omega)$
+
+**同策略**：行为策略与目标策略相同，即收集数据时即使用目标策略进行决策；\
+**异策略**：行为策略和目标策略不同（如DQN中可以用任意策略收集经验即$\epsilon-greedy$,行为策略具有随机性可更好探索更多状态）
+![同策略与异策略](./picture/2.jpg)
+
+## SARSA算法
+### 表格形式的SARSA算法
+状态空间S和动作空间A都是有限集，每个表格与一个策略函数$\pi$对应
+
+**算法推导**: \
+对贝尔曼方程
+$$
+Q_{\pi}(s_t,a_t)=\mathbb{E}_{S_{t+1},A_{t+1}} \left[R_t+\gamma \cdot \max Q_{\pi}(S_{t+1},A)|S_t=s_t,A_t=a_t\right]
+$$
+* 方程左侧$Q_{\pi}(s_t,a_t)$可由$q(s_t,a_t)$近似，$q(s_t,a_t)$在表格中查出
+* 给定$s_t$与$a_t$,环境给出奖励$r_t$和新状态$s_{t+1}$。基于$s_{t+1}$做随机抽样可得到新动作
+  $$\hat{a}_{t+1}\sim \pi(\cdot|s_{t+1})$$
+* 求得TD目标
+  $$\hat{y}_t \triangleq r_t + \gamma \cdot q(s_{t+1},\hat{a}_{t+1})$$
+* 更新表格$(s_t,a_t)$位置上的元素
+  $$q(s_t,a_t)\leftarrow (1-\alpha) \cdot q(s_t,a_t)+\alpha \cdot \hat{y}_t$$
+SARSA算法依赖于策略函数$\pi$，$\hat{a}_{t+1}$根据策略函数$\pi(\cdot|s_{t+1})$抽样得到
+![](./picture/3.jpg)
