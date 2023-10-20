@@ -21,6 +21,7 @@ if __name__ == '__main__':
         state = [0, 0]
         stepCounter = 0
         is_terminated = False
+
         path=[state]
         while not is_terminated:
             action = ql.chosseAction(Q_table, state, maze)
