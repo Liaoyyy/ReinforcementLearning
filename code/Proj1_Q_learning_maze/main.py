@@ -5,8 +5,8 @@ import Q_learning as ql
 import time
 
 # Create a maze num '1' stands for a block and num'-1' refers to the destination
-maze = np.array([[0, 0, 0, 1], [1, 1, 0, 1], [0, 0, 0, 0], [1, 0, 1, -1]])
-
+#maze = np.array([[0, 0, 0, 1], [1, 1, 0, 1], [0, 0, 0, 0], [1, 0, 1, -1]])
+maze = np.array([[0, 0, 1, 0, 1], [1, 0, 0, 0, 0], [0, 0, 1, 1, 0], [1, 0, 1, 0,-1]])
 Actions = ['up', 'down', 'left', 'right']
 epoch = 80
 row, col = maze.shape
