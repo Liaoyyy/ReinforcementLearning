@@ -84,3 +84,66 @@ $$G_t=\sum_{k=t+1}^T \gamma^{k-t-1} R_k$$
 上式允许$T=\infty$或$\gamma=1$
 此外，存在递推公式：
 $$G_t=R_{t+1}+\gamma G_{t+1}$$
+
+### 策略与价值函数
+**价值函数**：评估当前智能体在给定状态（或给定状态与动作）下有多好（回报的期望）\
+**策略**($\pi$):从状态到每个动作的选择概率之间的映射 \
+*若对每个收益加上同一个常数c，任何状态下相对价值不受影响*
+
+一些函数定义：
+* **状态价值函数**：策略$\pi$下状态$s$的价值函数记为$v_\pi(s)$，即从状态$s$开始,智能体按照策略$\pi$进行决策获得的回报期望
+   $$v_\pi(s)=\mathbb{E}_\pi \left[G_t|S_t=s\right]=\mathbb{E}_\pi\left[\sum_{k=0}^\infty \gamma^k R_{t+k+1}|S_t=s\right]$$
+
+* **动作价值函数**：在策略$\pi$，状态$s$时采取动作$a$的价值记为$q_\pi(s,a)$，即根据策略$\pi$，从状态$s$开始，执行动作$a$后，所有决策序列的期望回报
+  $$v_\pi(s,a)=\mathbb{E}_\pi \left[G_t|S_t=s,A_t=a\right]=\mathbb{E}_\pi\left[\sum_{k=0}^\infty \gamma^k R_{t+k+1}|S_t=s,A_t=a \right]$$
+
+* **动作价值函数与状态价值函数关系**
+  
+  ![](./picture/4.png) \
+  由上图可推出：
+  $$v_\pi(s)=\sum_a \pi(a|s)q_\pi(s,a)$$
+  ![](./picture/5.png) \
+  由上图可推出：
+  $$q_\pi(s,a)=\sum_{s',a} p(s',r|s,a)(r+v_\pi(s'))$$
+
+**价值函数的递推特性(贝尔曼方程)**：
+$$v_\pi(s)=\sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a)[r+\gamma v_\pi(s')]$$
+证明如下：
+$$
+\begin{align}
+v_\pi(s)&=\mathbb{E}[G_t|S_t=s] \nonumber\\
+&=\mathbb{E}[R_{t+1}+\gamma G_{t+1}|S_t=s] \nonumber\\
+&=\mathbb{E}[R_{t+1}|S_t=s]+\mathbb{E}[\gamma G_{t+1}|S_t=s] \nonumber\\
+&=\sum_a \pi(a|s)\sum_{s',r}rp(s',r|s,a) + \gamma\sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \mathbb{E}[G_{t+1}|S_t=s']\nonumber\\
+&=\sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a)[r+\gamma v_\pi(s')] \nonumber
+\end{align}
+$$
+
+### 最优策略与最优价值函数
+* **最优策略**（$\pi_\star$）：存在一个策略不劣于其他所有策略 \
+*不劣于：对所有$s\in S$，$v_{\pi_\star} \geq v_\pi$*
+* **最优价值函数**：
+    * 最优状态价值函数--$v_\star(s)$：
+      $$v_\star(s)=\max_\pi v_\pi(s)$$
+    * 最优动作价值函数--$q_\star(s,a)$：
+      $$q_\star(s,a)=\max_\pi q_\pi(s,a)$$
+
+最优状态价值函数对应的贝尔曼方程即为**贝尔曼最优方程**，进而可推出：最优策略下各个状态的价值一定等于这个状态下最优动作的期望回报，即：
+$$
+\begin{align}
+v_\star(s)&= \max_{a\in A} q_{\pi_{\star}}(s,a) \nonumber \\
+&=\max_a \mathbb{E}_{\pi_\star}[G_t|S_t=s,A_t=a] \nonumber\\
+&=\max_a \mathbb{E}_{\pi_\star}[R_{t+1}+\gamma G_{t+1}|S_t=s,A_t=a] \nonumber\\
+&=\max_a \mathbb{E}[R_{t+1}+\gamma v_\star(S_{t+1})|S_t=s,A_t=a] \nonumber\\
+&=\max_a \sum_{s',r}p(s',r|s,a)[r+\gamma v_\star(s')] \nonumber
+\end{align}
+$$
+*最后两行为贝尔曼最优方程两种形式*
+
+贝尔曼最优方程直接求解假设：
+1. 准确知道环境动态变化特性$p(s',r|s,a)$
+2. 有足够计算资源
+3. 马尔科夫性质
+
+***
+## 动态规划
