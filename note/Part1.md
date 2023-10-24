@@ -147,3 +147,40 @@ $$
 
 ***
 ## 动态规划
+
+### 策略评估
+*对于任意一策略$\pi$，可迭代求其状态价值函数，这一过程称为**策略评估***
+
+* 求解流程：
+  1. 输入待评估策略$\pi$
+  2. 确定收敛参数$\theta$，用于确定估计量精度
+  3. 对任意$s \in S$，任意初始化$V(s)$，其中$V$(终止状态)=0
+  4. 循环迭代（直到$\Delta \leftarrow \theta$）:\
+         $\Delta \leftarrow 0$ \
+         对每一个$s \in S$循环：
+$$
+\begin{align}
+&v \leftarrow V(s) \nonumber \\
+&V(s) \leftarrow \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a)[r+\gamma V(s')] \nonumber \\
+&\Delta \leftarrowtail max(\Delta,|v-V(s)|) \nonumber
+\end{align}
+$$
+
+* 求解基础：\
+  新一轮更新\
+  对任意$s \in S$
+  $$
+  \begin{align}
+  v_{k+1}(s)&=\mathbb{E}_\pi[R_{t+1}+\gamma v_k(S_{t+1})|S_t=s] \nonumber\\
+  &=\sum_a \pi(a|s) \sum_{s',r}p(s',r|s,a)[r+\gamma v_k(s')] \nonumber
+  \end{align}
+  $$
+  显然，$v_k=v_\pi$是更新规则的不动点，最终迭代会收敛于真实$v_\pi$
+
+### 策略改进
+*对于一给定策略，可对其进行改进得到更优策略过程*
+
+* 迭代算法：\
+  ![](./picture/6.png) \
+  即对初始策略求得价值函数后，根据贪心策略更新得到新策略，进而再更新价值函数，直至更新前后策略函数一致（即收敛）
+  ![](./picture/7.png)
