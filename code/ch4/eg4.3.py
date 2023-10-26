@@ -3,12 +3,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 
-target=20
+target=100
 state=list(range(0,target+1,1))#状态空间
-p_h=0.5 #抛硬币正面朝上概率
+p_h=0.4 #抛硬币正面朝上概率
 stateValues=np.random.random(size=target+1) #状态价值函数
 stateValues[0]=0
-stateValues[target]=1
+stateValues[target]=0
 bound = 0.001
 gamma = 0.9
 
@@ -31,7 +31,11 @@ def searchBestAction(stateValues,curState,strategy):
     temp=stateValues[curState]
     allowedAction=list(range(0,min(curState,target-curState)+1))
     for a in allowedAction:
-        Value=p_h*(a+gamma*stateValues[curState+a]+(1-p_h)*(-a+gamma*stateValues[curState-a]))
+        if(a+curState==target):
+            reward=1
+        else:
+            reward=0
+        Value=p_h*(reward+gamma*stateValues[curState+a]+(1-p_h)*(reward+gamma*stateValues[curState-a]))
         if(Value>temp):
             newStepStrat=[a]
         elif(Value==temp):
@@ -53,7 +57,11 @@ def DP(bound,stateValues,strategy):
                     continue
                 v=stateValues[s]
                 action=np.random.choice(strategy[s]) #根据策略函数做出选择
-                stateValues[s]=p_h*(action+gamma*stateValues[s+action])+(1-p_h)*(-action+gamma*stateValues[s-action])
+                if(action+s==target):
+                    reward=1
+                else:
+                    reward=0
+                stateValues[s]=p_h*(reward+gamma*stateValues[s+action])+(1-p_h)*(reward+gamma*stateValues[s-action])
                 delta=max(delta,abs(v-stateValues[s]))
 
         #策略改进
