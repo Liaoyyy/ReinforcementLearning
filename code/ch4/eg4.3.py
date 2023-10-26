@@ -3,13 +3,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 
-target=10
+target=20
 state=list(range(0,target+1,1))#状态空间
-p_h=0.25 #抛硬币正面朝上概率
+p_h=0.5 #抛硬币正面朝上概率
 stateValues=np.random.random(size=target+1) #状态价值函数
 stateValues[0]=0
 stateValues[target]=1
-bound = 0.01
+bound = 0.001
 gamma = 0.9
 
 def initStrategy(step):
@@ -26,20 +26,31 @@ def generateRandomNum(p_h):
         return 0#背面朝上
 
 #单步策略改进
-def searchBestAction(stateValues,curState):
-    newStepStrat=[]#新策略
-    allowedAction=list(range(0,min()))
+def searchBestAction(stateValues,curState,strategy):
+    newStepStrat=strategy[curState]#当前状态下新策略
+    temp=stateValues[curState]
+    allowedAction=list(range(0,min(curState,target-curState)+1))
+    for a in allowedAction:
+        Value=p_h*(a+gamma*stateValues[curState+a]+(1-p_h)*(-a+gamma*stateValues[curState-a]))
+        if(Value>temp):
+            newStepStrat=[a]
+        elif(Value==temp):
+            if a not in newStepStrat:
+                newStepStrat.append(a)
     return newStepStrat
 
 #使用策略迭代方法
 def DP(bound,stateValues,strategy):
-
+    flag=0
     while(1):
+        flag+=1
         #策略评估
         delta=1
         while(delta>bound):
             delta=0.0
             for s in state:
+                if(s==target or s==0):
+                    continue
                 v=stateValues[s]
                 action=np.random.choice(strategy[s]) #根据策略函数做出选择
                 stateValues[s]=p_h*(action+gamma*stateValues[s+action])+(1-p_h)*(-action+gamma*stateValues[s-action])
@@ -48,13 +59,25 @@ def DP(bound,stateValues,strategy):
         #策略改进
         policyStable=True
         for s in state:
-            oldAction=strategy[s]
+            if (s == target or s == 0):
+                continue
+            oldAction=strategy[s].copy()
+            strategy[s]=searchBestAction(stateValues,s,strategy)
+            oldAction.sort()
+            strategy[s].sort()
+            if(strategy[s]==oldAction):
+                continue
+            else:
+                policyStable = False
 
-
-
+        if(policyStable):
+            print(flag)
+            return#已收敛至最优解，返回
 if __name__ == "__main__":
     strategy=initStrategy(target+1) #随机初始化策略函数
     startTime=time.time()
     DP(bound,stateValues,strategy)
     endTime=time.time()
     print("Traning period=",(endTime-startTime))
+    print(strategy)
+    print(stateValues)
