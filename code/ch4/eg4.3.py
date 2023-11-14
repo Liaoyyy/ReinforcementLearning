@@ -1,21 +1,23 @@
-#赌徒问题
+#使用策略迭代方法解决赌徒问题
+
 import numpy as np
 from matplotlib import pyplot as plt
 import time
 
-target=100
+target=10 #十步
 state=list(range(0,target+1,1))#状态空间
 p_h=0.4 #抛硬币正面朝上概率
-stateValues=np.random.random(size=target+1) #状态价值函数
+stateValues=np.zeros(target+1) #状态价值函数
 stateValues[0]=0
-stateValues[target]=0
+stateValues[target]=1
 bound = 0.001
 gamma = 0.9
 
 def initStrategy(step):
     strategy=[[0]]*(step)
     for i in range(1,step-1):
-        strategy[i]=[np.random.randint(0,min(i,step-i-1))]
+        #strategy[i]=[np.random.randint(0,min(i,step-i-1))]
+        strategy[i] = [0]
     return strategy
 
 def generateRandomNum(p_h):
@@ -27,17 +29,18 @@ def generateRandomNum(p_h):
 
 #单步策略改进
 def searchBestAction(stateValues,curState,strategy):
-    newStepStrat=strategy[curState]#当前状态下新策略
-    temp=stateValues[curState]
+    newStepStrat=[]#当前状态下新策略
+    temp=-100
     allowedAction=list(range(0,min(curState,target-curState)+1))
     for a in allowedAction:
         if(a+curState==target):
             reward=1
         else:
             reward=0
-        Value=p_h*(reward+gamma*stateValues[curState+a]+(1-p_h)*(reward+gamma*stateValues[curState-a]))
+        Value=p_h*(gamma*stateValues[curState+a])+(1-p_h)*(gamma*stateValues[curState-a])
         if(Value>temp):
             newStepStrat=[a]
+            temp=Value
         elif(Value==temp):
             if a not in newStepStrat:
                 newStepStrat.append(a)
@@ -61,7 +64,7 @@ def DP(bound,stateValues,strategy):
                     reward=1
                 else:
                     reward=0
-                stateValues[s]=p_h*(reward+gamma*stateValues[s+action])+(1-p_h)*(reward+gamma*stateValues[s-action])
+                stateValues[s]=p_h*(gamma*stateValues[s+action])+(1-p_h)*(gamma*stateValues[s-action])
                 delta=max(delta,abs(v-stateValues[s]))
 
         #策略改进
@@ -84,7 +87,7 @@ def DP(bound,stateValues,strategy):
 if __name__ == "__main__":
     strategy=initStrategy(target+1) #随机初始化策略函数
     startTime=time.time()
-    DP(bound,stateValues,strategy)
+    DP(bound,stateValues,strategy)#动态规划 策略改进
     endTime=time.time()
     print("Traning period=",(endTime-startTime))
     print(strategy)
