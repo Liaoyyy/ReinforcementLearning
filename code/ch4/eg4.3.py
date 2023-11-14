@@ -16,7 +16,7 @@ epsilon = 0.0001
 
 policy = np.zeros(step+1,dtype=int)
 state = list(range(0,step+1))
-stateValues = np.zeros(step+1)
+stateValues = np.random.random(size=step+1)
 stateValues[step] = 1
 
 # policy evaluation
